@@ -52,12 +52,16 @@ const (
 )
 
 var (
+	loadError          error
 	procXInputGetState *syscall.Proc
 	procXInputSetState *syscall.Proc
 )
 
-// Init initializes XInput.
-func Init() error {
+func init() {
+	loadError = load()
+}
+
+func load() error {
 	dll, err := syscall.LoadDLL("xinput1_4.dll")
 	defer func() {
 		if err != nil {
@@ -79,11 +83,10 @@ func Init() error {
 	return err
 }
 
-// MustInit initializes XInput and panics upon failure.
-func MustInit() {
-	if err := Init(); err != nil {
-		panic(err)
-	}
+// Load() checks if XInput was successfully loaded.
+// Other functions of the library may be used safely only if it returns no error.
+func Load() error {
+	return loadError
 }
 
 // GetState retrieves the current state of the controller.
